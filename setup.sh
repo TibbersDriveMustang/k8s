@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 
 
+#######################################
+# This is Just a Reference shell Script
+#######################################
+
+# For Mac Install Command Line Tools in case you dont` have
+xcode-select --install
+
 #set -e
 
 #sudo su
@@ -50,6 +57,19 @@ echo "Make sure virtualBox is installed"
     sudo cp ./kubectl /usr/local/bin/kubectl
     #Check version
     kubectl version
+
+# For Mac, Install homebrew in case you don`t have
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+# For Mac, Install wget in case you don`t have
+brew install wget
+
+echo "Installing Redis:"
+
+wget http://download.redis.io/redis-stable.tar.gz
+tar xvzf redis-stable.tar.gz
+cd redis-stable
+make
 
 
 

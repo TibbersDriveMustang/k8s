@@ -37,15 +37,25 @@ import (
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/openstack"
+
+    // "regexp"
+    "strings"
 )
 
 func main() {
 	var kubeconfig *string
-	if home := homeDir(); home != "" {
+
+    var home string
+
+    // Get kube config file: $Home/.kube/config
+	if home = homeDir(); home != "" {
+        fmt.Printf("%s \n", home)
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
+
+    //??
 	flag.Parse()
 
 	// use the current context in kubeconfig
@@ -54,11 +64,12 @@ func main() {
 		panic(err.Error())
 	}
 
-	// create the clientset
+	// create the clientset via config file
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
 	}
+
 	for {
 		pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
 		if err != nil {
@@ -69,7 +80,13 @@ func main() {
 		// Examples for error handling:
 		// - Use helper functions like e.g. errors.IsNotFound()
 		// - And/or cast to StatusError and use its properties like e.g. ErrStatus.Message
-		namespace := "default"
+
+        pathList := strings.Split(home, "/")
+
+        namespace := pathList[len(pathList) - 1]
+
+        fmt.Println(namespace)
+        //TODO get pod name
 		pod := "example-xxxxx"
 		_, err = clientset.CoreV1().Pods(namespace).Get(pod, metav1.GetOptions{})
 		if errors.IsNotFound(err) {
@@ -88,7 +105,10 @@ func main() {
 }
 
 func homeDir() string {
+    fmt.Printf("homeDir:\n")
 	if h := os.Getenv("HOME"); h != "" {
+        fmt.Printf(h)
+        fmt.Printf("\n")
 		return h
 	}
 	return os.Getenv("USERPROFILE") // windows
