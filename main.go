@@ -86,7 +86,10 @@ func main() {
         namespace := pathList[len(pathList) - 1]
 
         fmt.Println(namespace)
+		//TODO use helm, the package manager for kubernetes
         //TODO get pod name
+		//Ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.16/#pod-v1-core
+
 		pod := "example-xxxxx"
 		_, err = clientset.CoreV1().Pods(namespace).Get(pod, metav1.GetOptions{})
 		if errors.IsNotFound(err) {
