@@ -12,9 +12,9 @@
     installed v19.03
 
 # Install Rancher:
->sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 rancher/rancher
->Go to htts://localhost to start a rancher Cluster
->Link the running kubernetes cluster(raised by minikube) to rancher via import
+>sudo docker run -d --restart=unless-stopped -p 80:80 -p 443:443 rancher/rancher  
+>Go to htts://localhost to start a rancher Cluster 
+>Link the running kubernetes cluster(raised by minikube) to rancher via import  
 
 # Start Redis Cluster:
 >kubectl apply -f redis-sts.yaml
