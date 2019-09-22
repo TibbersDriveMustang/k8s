@@ -1,6 +1,6 @@
 # First
 >go get k8s.io/client-go@kubernetes-1.15.3
-    
+
 # Then
 >go build -o app .
 
@@ -27,5 +27,11 @@
 # Inspect single Pod(shows no thing):
 >kubectl describe pods redis-cluster-0 | grep pvc
 
-# TODO:
->Rancher State: pending
+# Rancher status: pending
+## Check cattle-node-agent status
+>kubectl -n cattle-system get pods -l app=cattle-agent -o wide
+#### log
+>kubectl -n cattle-system logs -l app=cattle-agent
+
+## Check kubernetes config
+> vi ~/.kube/config
