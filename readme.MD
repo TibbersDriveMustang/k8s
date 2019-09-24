@@ -35,3 +35,23 @@
 
 ## Check kubernetes config
 > vi ~/.kube/config
+
+# Check redis-cluster serviceName
+>kubectl get svc my-nginx
+>kubectl describe svc redis-cluster
+>kubectl exec redis-cluster-0 -- printenv | grep SERVICE
+
+# Exposing Redis-cluster
+>kubectl expose deployment hello --port=8080 --type=NodePort
+## deployment not found
+>kubectl expose deployment redis --type=LoadBalancer --name=redis
+
+
+## Get Pod IP
+>kubectl get pods -o yaml | grep -i podip
+
+## Get minikue services
+>minikube service redis-cluster
+
+## Exec on Redis node
+>kubectl exec -it redis-cluster-0 redis-cli
