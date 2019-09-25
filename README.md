@@ -12,9 +12,8 @@
 >kubectl apply -f redis-svc.yaml
 
 # Setup Redis Cluster, Set first redis pod as master:
->kubectl exec -it redis-cluster-0 redis-cli cluster nodes
+>kubectl exec -it redis-cluster-0 -- redis-cli --cluster create --cluster-replicas 1 $(kubectl get pods -l app=redis-cluster -o jsonpath='{range.items[*]}{.status.podIP}:6379 ')
 
-### **Issue, cluster nodes not auto connected**
 
 # Verify Redis-cluster pods are running:
 >kubectl get pods
@@ -27,6 +26,10 @@
 
 # Access one of the Redis Pod:
 >kubectl exec -it redis-cluster-0 redis-cli
+
+
+# Verify Redis Cluster Statues
+>kubectl exec -it redis-cluster-0 -- redis-cli cluster info
 
 ## Access Redis-cluster via minikube
 >minikube service redis-cluster
