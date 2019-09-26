@@ -24,15 +24,14 @@
 # Verify one of the redis pod is running
 >kubectl exec -it redis-cluster-0 redis-cli ping
 
-# Access one of the Redis Pod:
->kubectl exec -it redis-cluster-0 redis-cli
-
-
 # Verify Redis Cluster Statues
 >kubectl exec -it redis-cluster-0 -- redis-cli cluster info
 
-## Access Redis-cluster via minikube
->minikube service redis-cluster
+# Access one of the Redis Pod, and test:
+>kubectl exec -it redis-cluster-0 redis-cli -- -c
+>set LogiOcean hello
+>kubectl exec -it redis-cluster-3 redis-cli -- -c
+>get LogiOcean
 
 
 # Clean Up
