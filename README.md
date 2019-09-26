@@ -28,10 +28,10 @@
 >kubectl exec -it redis-cluster-0 -- redis-cli cluster info
 
 # Access one of the Redis Pod, and test:
->kubectl exec -it redis-cluster-0 redis-cli -- -c
->set LogiOcean hello
->kubectl exec -it redis-cluster-3 redis-cli -- -c
->get LogiOcean
+>kubectl exec -it redis-cluster-0 redis-cli -- -c  
+>set LogiOcean hello  
+>kubectl exec -it redis-cluster-3 redis-cli -- -c  
+>get LogiOcean  
 
 
 # Clean Up
