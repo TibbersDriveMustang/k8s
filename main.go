@@ -37,25 +37,23 @@ import (
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/openstack"
-
-    // "regexp"
-    "strings"
+	// "regexp"
 )
 
 func main() {
 	var kubeconfig *string
 
-    var home string
+	var home string
 
-    // Get kube config file: $Home/.kube/config
+	// Get kube config file: $Home/.kube/config
 	if home = homeDir(); home != "" {
-        fmt.Printf("%s \n", home)
+		fmt.Printf("%s \n", home)
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 
-    //??
+	//??
 	flag.Parse()
 
 	// use the current context in kubeconfig
@@ -81,16 +79,19 @@ func main() {
 		// - Use helper functions like e.g. errors.IsNotFound()
 		// - And/or cast to StatusError and use its properties like e.g. ErrStatus.Message
 
-        pathList := strings.Split(home, "/")
+		// pathList := strings.Split(home, "/")
+		// namespace := pathList[len(pathList)-1]
 
-        namespace := pathList[len(pathList) - 1]
+		//Use default namespace
+		namespace := "default"
 
-        fmt.Println(namespace)
 		//TODO use helm, the package manager for kubernetes
-        //TODO get pod name
+		//TODO get pod name
 		//Ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.16/#pod-v1-core
 
-		pod := "example-xxxxx"
+		//hardcode Test first node
+		pod := "redis-cluster-0"
+
 		_, err = clientset.CoreV1().Pods(namespace).Get(pod, metav1.GetOptions{})
 		if errors.IsNotFound(err) {
 			fmt.Printf("Pod %s in namespace %s not found\n", pod, namespace)
@@ -108,10 +109,10 @@ func main() {
 }
 
 func homeDir() string {
-    fmt.Printf("homeDir:\n")
+	fmt.Printf("homeDir:\n")
 	if h := os.Getenv("HOME"); h != "" {
-        fmt.Printf(h)
-        fmt.Printf("\n")
+		fmt.Printf(h)
+		fmt.Printf("\n")
 		return h
 	}
 	return os.Getenv("USERPROFILE") // windows
