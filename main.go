@@ -40,6 +40,146 @@ import (
 	// "regexp"
 )
 
+var redis_sts_1 = `
+{
+	"apiVersion": "v1",
+	"kind": "ConfigMap",
+	"metadata": {
+		"name": "redis-cluster"
+	},
+	"data": {
+		"update-node.sh": "#!/bin/sh\nREDIS_NODES=\"/data/nodes.conf\"\nsed -i -e \"/myself/ s/[0-9]\\{1,3\\}\\.[0-9]\\{1,3\\}\\.[0-9]\\{1,3\\}\\.[0-9]\\{1,3\\}/${POD_IP}/\" ${REDIS_NODES}\nexec \"$@\"\n",
+		"redis.conf": "cluster-enabled yes\ncluster-require-full-coverage no\ncluster-node-timeout 15000\ncluster-config-file /data/nodes.conf\ncluster-migration-barrier 1\nappendonly yes\nprotected-mode no"
+	}
+}
+`
+
+var redis_sts_2 = `
+{
+	{
+		"apiVersion": "apps/v1",
+		"kind": "StatefulSet",
+		"metadata": {
+			"name": "redis-cluster"
+		},
+		"spec": {
+			"serviceName": "redis-cluster",
+			"replicas": 6,
+			"selector": {
+				"matchLabels": {
+					"app": "redis-cluster"
+				}
+			},
+			"template": {
+				"metadata": {
+					"labels": {
+						"app": "redis-cluster"
+					}
+				},
+				"spec": {
+					"containers": [
+						{
+							"name": "redis",
+							"image": "redis:5.0.1-alpine",
+							"ports": [
+								{
+									"containerPort": 6379,
+									"name": "client"
+								},
+								{
+									"containerPort": 16379,
+									"name": "gossip"
+								}
+							],
+							"command": [
+								"/conf/update-node.sh",
+								"redis-server",
+								"/conf/redis.conf"
+							],
+							"env": [
+								{
+									"name": "POD_IP",
+									"valueFrom": {
+										"fieldRef": {
+											"fieldPath": "status.podIP"
+										}
+									}
+								}
+							],
+							"volumeMounts": [
+								{
+									"name": "conf",
+									"mountPath": "/conf",
+									"readOnly": false
+								},
+								{
+									"name": "data",
+									"mountPath": "/data",
+									"readOnly": false
+								}
+							]
+						}
+					],
+					"volumes": [
+						{
+							"name": "conf",
+							"configMap": {
+								"name": "redis-cluster",
+								"defaultMode": 493
+							}
+						}
+					]
+				}
+			},
+			"volumeClaimTemplates": [
+				{
+					"metadata": {
+						"name": "data"
+					},
+					"spec": {
+						"accessModes": [
+							"ReadWriteOnce"
+						],
+						"resources": {
+							"requests": {
+								"storage": "1Gi"
+							}
+						}
+					}
+				}
+			]
+		}
+	}
+`
+
+var redis_svc = `
+{
+	"apiVersion": "v1",
+	"kind": "Service",
+	"metadata": {
+		"name": "redis-cluster"
+	},
+	"spec": {
+		"type": "LoadBalancer",
+		"ports": [
+			{
+				"port": 6379,
+				"targetPort": 6379,
+				"name": "client"
+			},
+			{
+				"port": 16379,
+				"targetPort": 16379,
+				"name": "gossip"
+			}
+		],
+		"selector": {
+			"app": "redis-cluster"
+		}
+	}
+}
+`
+
 func main() {
 	var kubeconfig *string
 
@@ -55,6 +195,9 @@ func main() {
 
 	//??
 	flag.Parse()
+
+	//TODO read config from yaml files and setup the k8s cluster
+	// yaml.NewYAMLOrJSONDecoder()
 
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
