@@ -18,16 +18,20 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/remotecommand"
+	// "k8s.io/client-go/pkg/kubectl/cmd"
 	//
 	// Uncomment to load all auth plugins
 	// _ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -196,6 +200,8 @@ func main() {
 	//??
 	flag.Parse()
 
+	// decode := api.Codecs.UniversalDeserializer().Decode
+
 	//TODO read config from yaml files and setup the k8s cluster
 	// yaml.NewYAMLOrJSONDecoder()
 
@@ -209,6 +215,38 @@ func main() {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
+	}
+
+	// Some command line test
+	testCommand := "kubectl get all"
+	jobName := ""
+	postRequset := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(jobName).Namespace("default").SubResource("exec")
+
+	postRequset.VersionedParams(&core_v1.PodExecOptions{
+		Command:   strings.Fields(testCommand),
+		Container: "",
+		Stdin:     false,
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       false,
+	}, parameterCodec)
+
+	fmt.Println("Request URL:", postRequset.URL().String())
+
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", postRequset.URL())
+	if err != nil {
+		panic(err)
+	}
+
+	var stdout, stderr bytes.Buffer
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdin:  nil,
+		Stdout: &stdout,
+		Stderr: &stderr,
+		Tty:    false,
+	})
+	if err != nil {
+		panic(err)
 	}
 
 	for {
