@@ -26,6 +26,7 @@ import (
 	"strings"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -218,18 +219,33 @@ func main() {
 	}
 
 	// Some command line test
+	// Ref: http://people.redhat.com/jrivera/openshift-docs_preview/openshift-online/glusterfs-review/go_client/executing_remote_processes.html
 	testCommand := "kubectl get all"
 	jobName := ""
 	postRequset := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(jobName).Namespace("default").SubResource("exec")
+	postRequset.VersionedParams(
+		&corev1.PodExecOptions{
+			Command:   strings.Fields(testCommand),
+			Container: "",
+			Stdin:     false,
+			Stdout:    true,
+			Stderr:    true,
+			TTY:       false,
+		},
+		metav1.ParameterCodec,
+	)
 
-	postRequset.VersionedParams(&core_v1.PodExecOptions{
-		Command:   strings.Fields(testCommand),
-		Container: "",
-		Stdin:     false,
-		Stdout:    true,
-		Stderr:    true,
-		TTY:       false,
-	}, parameterCodec)
+	// postRequset.VersionedParams(
+	// 	kubernets.v1.PodExecOptions{
+	// 		Command:   strings.Fields(testCommand),
+	// 		Container: "",
+	// 		Stdin:     false,
+	// 		Stdout:    true,
+	// 		Stderr:    true,
+	// 		TTY:       false
+	// 	},
+	// 	parameterCodec
+	// )
 
 	fmt.Println("Request URL:", postRequset.URL().String())
 
@@ -239,12 +255,14 @@ func main() {
 	}
 
 	var stdout, stderr bytes.Buffer
+
 	err = exec.Stream(remotecommand.StreamOptions{
 		Stdin:  nil,
 		Stdout: &stdout,
 		Stderr: &stderr,
 		Tty:    false,
 	})
+
 	if err != nil {
 		panic(err)
 	}
